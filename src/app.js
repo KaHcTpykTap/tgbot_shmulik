@@ -5,6 +5,9 @@ import config from "config";
 import { ogg } from "./ogg.js";
 import { openai } from "./openai.js";
 
+console.log(config.get("ENV"));
+console.log('Server running...');
+
 const INITIAL_SESSION = {
   messages: [],
 };
@@ -33,7 +36,7 @@ bot.on(message("voice"), async (ctx) => {
     const mp3Path = await ogg.toMp3(oggPath, userId);
 
     const text = await openai.transcription(mp3Path);
-    await ctx.reply(code(`השאלה שלך: ${text}`));
+    await ctx.reply(code(`השאלה שלך: voice`));
 
     ctx.session.messages.push({ role: openai.roles.USER, content: text });
 
@@ -54,12 +57,18 @@ bot.on(message("text"), async (ctx) => {
   try {
     await ctx.reply(code("הודעה התקבלה, ממתינה לתגובה מהשרת..."));
 
+    console.log(ctx.message.text);
+
     ctx.session.messages.push({
       role: openai.roles.USER,
       content: ctx.message.text,
     });
 
-    const response = await openai.chat(ctx.session.messages);
+      const response = await openai.chat(ctx.session.messages);
+      console.log("response");
+      console.log(response);
+
+
 
     ctx.session.messages.push({
       role: openai.roles.ASSISTANT,
