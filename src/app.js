@@ -14,6 +14,7 @@ const INITIAL_SESSION = {
 
 const bot = new Telegraf(config.get("TELEGRAM_TOKEN"));
 
+
 bot.use(session());
 
 bot.command("new", async (ctx) => {
@@ -52,12 +53,12 @@ bot.on(message("voice"), async (ctx) => {
     console.log("Error while voice message", e.message);
   }
 });
+
 bot.on(message("text"), async (ctx) => {
   ctx.session ??= INITIAL_SESSION;
   try {
     await ctx.reply(code("הודעה התקבלה, ממתינה לתגובה מהשרת..."));
-
-    console.log(ctx.message.text);
+    await ctx.reply(code("text"));
 
     ctx.session.messages.push({
       role: openai.roles.USER,
