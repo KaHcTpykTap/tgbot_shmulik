@@ -6,7 +6,7 @@ import { ogg } from "./ogg.js";
 import { openai } from "./openai.js";
 
 console.log(config.get("ENV"));
-console.log('Server running...');
+console.log("Server running...");
 
 const INITIAL_SESSION = {
   messages: [],
@@ -14,30 +14,28 @@ const INITIAL_SESSION = {
 
 const bot = new Telegraf(config.get("TELEGRAM_TOKEN"));
 
-
 bot.use(session());
 
 bot.command("new", async (ctx) => {
   ctx.session = INITIAL_SESSION;
-  await ctx.reply("מחכה להודעת הקול או הטקסט שלך");
 });
 
 bot.command("start", async (ctx) => {
   ctx.session = INITIAL_SESSION;
-  await ctx.reply("מחכה להודעת הקול או הטקסט שלך");
 });
 
 bot.on(message("voice"), async (ctx) => {
   ctx.session ??= INITIAL_SESSION;
   try {
-    await ctx.reply(code("הודעה התקבלה, ממתינה לתגובה מהשרת"));
+    await ctx.reply(code("יש לי הודעה קולית, דקה אחת..."));
+    await ctx.reply(code("Got a voicemail, one minute..."));
     const link = await ctx.telegram.getFileLink(ctx.message.voice.file_id);
     const userId = String(ctx.message.from.id);
     const oggPath = await ogg.create(link.href, userId);
     const mp3Path = await ogg.toMp3(oggPath, userId);
 
     const text = await openai.transcription(mp3Path);
-    await ctx.reply(code(`השאלה שלך: voice`));
+    await ctx.reply(code(`השאלה שלך: ${text}`));
 
     ctx.session.messages.push({ role: openai.roles.USER, content: text });
 
@@ -57,26 +55,26 @@ bot.on(message("voice"), async (ctx) => {
 bot.on(message("text"), async (ctx) => {
   ctx.session ??= INITIAL_SESSION;
   try {
-    await ctx.reply(code("הודעה התקבלה, ממתינה לתגובה מהשרת..."));
-    await ctx.reply(code("text"));
+    if (ctx.message.text === "שמוליק") {
+      await ctx.reply(code("היי בוס, מה רצית לשאול? מה שלומו של finitiOne"));
+    } else {
+      await ctx.reply(code("קיבלתי הודעת טקסט, דקה אחת..."));
+      await ctx.reply(code("Got a text message, one minute..."));
 
-    ctx.session.messages.push({
-      role: openai.roles.USER,
-      content: ctx.message.text,
-    });
+      ctx.session.messages.push({
+        role: openai.roles.USER,
+        content: ctx.message.text,
+      });
 
       const response = await openai.chat(ctx.session.messages);
-      console.log("response");
-      console.log(response);
 
+      ctx.session.messages.push({
+        role: openai.roles.ASSISTANT,
+        content: response.content,
+      });
 
-
-    ctx.session.messages.push({
-      role: openai.roles.ASSISTANT,
-      content: response.content,
-    });
-
-    await ctx.reply(response.content);
+      await ctx.reply(response.content);
+    }
   } catch (e) {
     console.log("Error while voice message", e.message);
   }
