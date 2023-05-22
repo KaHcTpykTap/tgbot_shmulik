@@ -37,6 +37,7 @@ class OpenAI {
       return response.data.text;
     } catch (e) {
       console.log("Error while transcription", e.message);
+      return "ERROR TRANSCRIPTION";
     }
   }
 }
