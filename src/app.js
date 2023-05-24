@@ -59,7 +59,13 @@ bot.on(message("voice"), async (ctx) => {
 bot.on(message("text"), async (ctx) => {
   ctx.session ??= INITIAL_SESSION;
   try {
-    if (ctx.message.text === "שמוליק") {
+    if (ctx.message.text.startsWith("Image")) {
+      const data = ctx.message.text;
+      const value = data.slice(7, data.length)
+      const imageLink = await openai.createImage(value);
+      await ctx.reply(imageLink);
+    }
+    else if (ctx.message.text === "שמוליק") {
       await ctx.reply(code("היי בוס, מה רצית לשאול? מה שלומו של finitiOne"));
     } else {
       await ctx.reply(code("קיבלתי הודעת טקסט, דקה אחת..."));

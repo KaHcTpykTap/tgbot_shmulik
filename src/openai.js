@@ -27,6 +27,18 @@ class OpenAI {
       console.log("Error while gpt chat", error.message);
     }
   }
+  async createImage(text) {
+    try {
+      const response = await this.openai.createImage({
+        prompt: text,
+        n: 1,
+        size: "1024x1024",
+      });
+      return response.data.data[0].url;
+    } catch (error) {
+      console.log("Error while gpt chat", error.message);
+    }
+  }
 
   async transcription(filepath) {
     try {
